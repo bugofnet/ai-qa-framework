@@ -1,7 +1,7 @@
 package client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
+import config.Config;
 import io.restassured.http.ContentType;
 import model.ChatRequest;
 import model.ChatResponse;
@@ -12,22 +12,14 @@ import java.util.List;
 import static io.restassured.RestAssured.given;
 
 public class LLMClient {
-    private static final String BASE_URL =
-            "https://api.groq.com/openai/v1/chat/completions";
-
-    private static final String MODEL =
-            "llama-3.3-70b-versatile";
-
-    private final Dotenv dotenv = Dotenv.load();
-
     private final ObjectMapper mapper = new ObjectMapper();
 
     public String ask(String prompt) {
 
         ChatRequest request = new ChatRequest(
-                MODEL,
+                Config.MODEL,
                 List.of(new Message("user", prompt)),
-                0
+                Config.TEMPERATURE
         );
 
         try {
@@ -36,11 +28,11 @@ public class LLMClient {
                     .contentType(ContentType.JSON)
                     .header(
                             "Authorization",
-                            "Bearer " + dotenv.get("GROQ_API_KEY")
+                            "Bearer " + Config.API_KEY
                     )
                     .body(request)
                     .when()
-                    .post(BASE_URL)
+                    .post(Config.BASE_URL)
                     .then()
                     .statusCode(200)
                     .extract()
